@@ -33,6 +33,7 @@
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkShrinkPolyData.h"
+#include "vtkSmartPointer.h"
 #include "vtkStructuredGrid.h"
 #include "vtkStructuredGridOutlineFilter.h"
 #include "vtkTestUtilities.h"
@@ -41,27 +42,32 @@
 
 int main(int argc, char* argv[])
 {
-  vtkCompositeDataPipeline* exec = vtkCompositeDataPipeline::New();
+  vtkSmartPointer<vtkCompositeDataPipeline> exec =
+    vtkSmartPointer<vtkCompositeDataPipeline>::New();
   vtkAlgorithm::SetDefaultExecutivePrototype(exec);
-  exec->Delete();
 
   // Standard rendering classes
-  vtkRenderer *ren = vtkRenderer::New();
-  vtkRenderWindow *renWin = vtkRenderWindow::New();
+  vtkSmartPointer<vtkRenderer> ren =
+    vtkSmartPointer<vtkRenderer>::New();
+  vtkSmartPointer<vtkRenderWindow> renWin =
+    vtkSmartPointer<vtkRenderWindow>::New();
   renWin->AddRenderer(ren);
-  vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
+  vtkSmartPointer<vtkRenderWindowInteractor> iren =
+    vtkSmartPointer<vtkRenderWindowInteractor>::New();
   iren->SetRenderWindow(renWin);
 
   // We will read three files and collect them together in one
   // multi-block dataset. I broke the combustor dataset into
   // three pieces and wrote them out separately.
-  int i;
-  vtkXMLStructuredGridReader* reader = vtkXMLStructuredGridReader::New();
+  vtkSmartPointer<vtkXMLStructuredGridReader> reader =
+    vtkSmartPointer<vtkXMLStructuredGridReader>::New();
 
   // vtkMultiBlockDataSet respresents multi-block datasets. See
   // the class documentation for more information.
-  vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::New();
+  vtkSmartPointer<vtkMultiBlockDataSet> mb =
+    vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
+  int i;
   for (i=0; i<3; i++)
     {
     // Here we load the three separate files (each containing
@@ -80,14 +86,13 @@ int main(int argc, char* argv[])
     // We create a copy to avoid adding the same data three
     // times (the output object of the reader does not change
     // when the filename changes)
-    vtkStructuredGrid* sg = vtkStructuredGrid::New();
+    vtkSmartPointer<vtkStructuredGrid> sg =
+      vtkSmartPointer<vtkStructuredGrid>::New();
     sg->ShallowCopy(reader->GetOutput());
 
     // Add the structured grid to the multi-block dataset
     mb->SetBlock(i, sg);
-    sg->Delete();
     }
-  reader->Delete();
 
   // Multi-block can be processed with regular VTK filters in two ways:
   // 1. Pass through a multi-block aware consumer. Since a multi-block
@@ -97,44 +102,51 @@ int main(int argc, char* argv[])
   //    all "simple" (that work only on simple, non-composite datasets) filters
 
   // outline
-  vtkStructuredGridOutlineFilter* of = vtkStructuredGridOutlineFilter::New();
+  vtkSmartPointer<vtkStructuredGridOutlineFilter> of =
+    vtkSmartPointer<vtkStructuredGridOutlineFilter>::New();
   of->SetInputData(mb);
 
   // geometry filter
   // This filter is multi-block aware and will request blocks from the
   // input. These blocks will be processed by simple processes as if they
   // are the whole dataset
-  vtkCompositeDataGeometryFilter* geom1 =
-    vtkCompositeDataGeometryFilter::New();
+  vtkSmartPointer<vtkCompositeDataGeometryFilter> geom1 =
+    vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
   geom1->SetInputConnection(0, of->GetOutputPort(0));
 
   // Rendering objects
-  vtkPolyDataMapper* geoMapper = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> geoMapper =
+    vtkSmartPointer<vtkPolyDataMapper>::New();
   geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
 
-  vtkActor* geoActor = vtkActor::New();
+  vtkSmartPointer<vtkActor> geoActor =
+    vtkSmartPointer<vtkActor>::New();
   geoActor->SetMapper(geoMapper);
   geoActor->GetProperty()->SetColor(0, 0, 0);
   ren->AddActor(geoActor);
 
   // cell 2 point and contour
-  vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
+  vtkSmartPointer<vtkCellDataToPointData> c2p =
+    vtkSmartPointer<vtkCellDataToPointData>::New();
   c2p->SetInputData(mb);
 
-  vtkContourFilter* contour = vtkContourFilter::New();
+  vtkSmartPointer<vtkContourFilter> contour =
+    vtkSmartPointer<vtkContourFilter>::New();
   contour->SetInputConnection(0, c2p->GetOutputPort(0));
   contour->SetValue(0, 0.45);
 
   // geometry filter
-  vtkCompositeDataGeometryFilter* geom2 =
-    vtkCompositeDataGeometryFilter::New();
+  vtkSmartPointer<vtkCompositeDataGeometryFilter> geom2 =
+    vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
   geom2->SetInputConnection(0, contour->GetOutputPort(0));
 
   // Rendering objects
-  vtkPolyDataMapper* contMapper = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> contMapper =
+    vtkSmartPointer<vtkPolyDataMapper>::New();
   contMapper->SetInputConnection(0, geom2->GetOutputPort(0));
 
-  vtkActor* contActor = vtkActor::New();
+  vtkSmartPointer<vtkActor> contActor =
+    vtkSmartPointer<vtkActor>::New();
   contActor->SetMapper(contMapper);
   contActor->GetProperty()->SetColor(1, 0, 0);
   ren->AddActor(contActor);
@@ -145,19 +157,6 @@ int main(int argc, char* argv[])
 
   // Cleanup
   vtkAlgorithm::SetDefaultExecutivePrototype(0);
-  of->Delete();
-  geom1->Delete();
-  geoMapper->Delete();
-  geoActor->Delete();
-  c2p->Delete();
-  contour->Delete();
-  geom2->Delete();
-  contMapper->Delete();
-  contActor->Delete();
-  ren->Delete();
-  renWin->Delete();
-  iren->Delete();
-  mb->Delete();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

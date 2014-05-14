@@ -13,7 +13,7 @@ SET (Common_SRCS
 
 # Create the vtkmyCommon C++ library.
 ADD_LIBRARY (vtkmyCommon ${Common_SRCS})
-TARGET_LINK_LIBRARIES (vtkmyCommon vtkCommon)
+TARGET_LINK_LIBRARIES (vtkmyCommon ${VTK_LIBRARIES})
 
 # Create the vtkmyCommon Tcl library.
 IF (VTK_WRAP_TCL AND VTKMY_WRAP_TCL)

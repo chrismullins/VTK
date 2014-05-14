@@ -1,11 +1,13 @@
 #include <vtkArrayPrint.h>
 #include <vtkDenseArray.h>
+#include <vtkSmartPointer.h>
 #include <vtkSparseArray.h>
 
 int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
 {
   // Create a dense matrix:
-  vtkDenseArray<double>* matrix = vtkDenseArray<double>::New();
+  vtkSmartPointer< vtkDenseArray<double> > matrix =
+    vtkSmartPointer< vtkDenseArray<double> >::New();
   matrix->Resize(10, 10);
   matrix->Fill(0.0);
 
@@ -17,7 +19,9 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
     }
 
   // Compute the sum of every column in a sparse-or-dense matrix:
-  vtkDenseArray<double>* sum = vtkDenseArray<double>::New();
+  //vtkDenseArray<double>* sum = vtkDenseArray<double>::New();
+  vtkSmartPointer< vtkDenseArray<double> > sum =
+    vtkSmartPointer< vtkDenseArray<double> >::New();
   sum->Resize(matrix->GetExtents()[1]);
   sum->Fill(0.0);
 
@@ -29,15 +33,12 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
     }
 
   cout << "matrix:\n";
-  vtkPrintMatrixFormat(cout, matrix);
+  vtkPrintMatrixFormat(std::cout, vtkTypedArray<double>::SafeDownCast(matrix));
   cout << "\n";
 
-  cout << "sum:\n";
-  vtkPrintVectorFormat(cout, sum);
-  cout << "\n";
+  std::cout << "sum:\n";
+  vtkPrintVectorFormat(std::cout, vtkTypedArray<double>::SafeDownCast(sum));
+  std::cout << "\n";
 
-  sum->Delete();
-  matrix->Delete();
-
-  return 0;
+  return EXIT_SUCCESS;
 }

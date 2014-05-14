@@ -1,39 +1,28 @@
-PROJECT(Infovis)
+cmake_minimum_required(VERSION 2.8)
+project(Infovis)
 
-IF(NOT VTK_BINARY_DIR)
-FIND_PACKAGE(VTK REQUIRED)
-IF(NOT VTK_USE_RENDERING)
-  MESSAGE(FATAL_ERROR "Example ${PROJECT_NAME} requires VTK_USE_RENDERING.")
-ENDIF(NOT VTK_USE_RENDERING)
-IF(NOT VTK_USE_INFOVIS)
-  MESSAGE(FATAL_ERROR "Example ${PROJECT_NAME} requires VTK_USE_INFOVIS.")
-ENDIF(NOT VTK_USE_INFOVIS)
-INCLUDE(${VTK_USE_FILE})
-ENDIF(NOT VTK_BINARY_DIR)
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
 
-ADD_EXECUTABLE(TreeLayout TreeLayout.cxx)
-TARGET_LINK_LIBRARIES(TreeLayout vtkInfovis vtkRendering vtkImaging vtkIO)
+add_executable(TreeLayout TreeLayout.cxx)
+target_link_libraries(TreeLayout ${VTK_LIBRARIES})
 
-IF(VTK_USE_VIEWS)
-  ADD_EXECUTABLE(HelloWorld HelloWorld.cxx)
-  TARGET_LINK_LIBRARIES(HelloWorld vtkViews vtkInfovis vtkRendering vtkImaging vtkIO)
+add_executable(HelloWorld HelloWorld.cxx)
+target_link_libraries(HelloWorld ${VTK_LIBRARIES})
 
-  ADD_EXECUTABLE(Theme Theme.cxx)
-  TARGET_LINK_LIBRARIES(Theme vtkViews vtkInfovis vtkRendering vtkImaging vtkIO)
+add_executable(Theme Theme.cxx)
+target_link_libraries(Theme ${VTK_LIBRARIES})
 
-  ADD_EXECUTABLE(CreateTree CreateTree.cxx)
-  TARGET_LINK_LIBRARIES(CreateTree vtkViews vtkInfovis vtkRendering vtkImaging vtkIO)
+add_executable(CreateTree CreateTree.cxx)
+target_link_libraries(CreateTree ${VTK_LIBRARIES})
 
-  ADD_EXECUTABLE(MultiView MultiView.cxx)
-  TARGET_LINK_LIBRARIES(MultiView vtkViews vtkInfovis vtkRendering vtkImaging vtkIO)
-ENDIF(VTK_USE_VIEWS)
+add_executable(MultiView MultiView.cxx)
+target_link_libraries(MultiView ${VTK_LIBRARIES})
 
-# If Qt is enabled include the EasyView example
-IF(VTK_USE_QVTK)
-  ADD_SUBDIRECTORY(EasyView)
-  ADD_SUBDIRECTORY(CustomLinkView)
-  ADD_SUBDIRECTORY(StatsView)
-ENDIF(VTK_USE_QVTK)
+add_subdirectory(EasyView)
+add_subdirectory(CustomLinkView)
+add_subdirectory(StatsView)
+
 
 IF(VTK_USE_PARALLEL_BGL)
   ADD_EXECUTABLE(ParallelBFS ParallelBFS.cxx)

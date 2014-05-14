@@ -28,6 +28,7 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderer.h"
+#include "vtkSmartPointer.h"
 
 int main()
 {
@@ -35,17 +36,19 @@ int main()
   // Next we create an instance of vtkConeSource and set some of its
   // properties
   //
-  vtkConeSource *cone = vtkConeSource::New();
+  vtkSmartPointer<vtkConeSource> cone =
+    vtkSmartPointer<vtkConeSource>::New();
   cone->SetHeight(3.0);
   cone->SetRadius(1.0);
   cone->SetResolution(10);
 
   //
   // We create an instance of vtkPolyDataMapper to map the polygonal data
-  // into graphics primitives. We connect the output of the cone souece
+  // into graphics primitives. We connect the output of the cone source
   // to the input of this mapper
   //
-  vtkPolyDataMapper *coneMapper = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> coneMapper =
+    vtkSmartPointer<vtkPolyDataMapper>::New();
   coneMapper->SetInputConnection(cone->GetOutputPort());
 
   //
@@ -53,7 +56,8 @@ int main()
   // the graphics primitives for a mapper. We set this actor's mapper to be
   // coneMapper which we created above.
   //
-  vtkActor *coneActor = vtkActor::New();
+  vtkSmartPointer<vtkActor> coneActor =
+    vtkSmartPointer<vtkActor>::New();
   coneActor->SetMapper(coneMapper);
 
   //
@@ -62,7 +66,8 @@ int main()
   // responsible for drawing the actors it has.  We also set the background
   // color here
   //
-  vtkRenderer *ren1= vtkRenderer::New();
+  vtkSmartPointer<vtkRenderer> ren1 =
+    vtkSmartPointer<vtkRenderer>::New();
   ren1->AddActor(coneActor);
   ren1->SetBackground(0.1, 0.2, 0.4);
 
@@ -71,7 +76,8 @@ int main()
   // We put our renderer into the render window using AddRenderer. We also
   // set the size to be 300 pixels by 300
   //
-  vtkRenderWindow *renWin = vtkRenderWindow::New();
+  vtkSmartPointer<vtkRenderWindow> renWin =
+    vtkSmartPointer<vtkRenderWindow>::New();
   renWin->AddRenderer(ren1);
   renWin->SetSize(300, 300);
 
@@ -86,14 +92,5 @@ int main()
     ren1->GetActiveCamera()->Azimuth(1);
     }
 
-  //
-  // Free up any objects we created
-  //
-  cone->Delete();
-  coneMapper->Delete();
-  coneActor->Delete();
-  ren1->Delete();
-  renWin->Delete();
-
-  return 0;
+  return EXIT_SUCCESS;
 }

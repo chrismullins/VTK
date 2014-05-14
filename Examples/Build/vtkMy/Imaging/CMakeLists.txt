@@ -13,7 +13,7 @@ SET (Imaging_SRCS
 
 # Create the vtkmyImaging C++ library
 ADD_LIBRARY (vtkmyImaging ${Imaging_SRCS})
-TARGET_LINK_LIBRARIES(vtkmyImaging vtkmyCommon vtkImaging)
+TARGET_LINK_LIBRARIES(vtkmyImaging vtkmyCommon ${VTK_LIBRARIES})
 
 # Create the vtkmyImaging Tcl library
 IF (VTK_WRAP_TCL AND VTKMY_WRAP_TCL)

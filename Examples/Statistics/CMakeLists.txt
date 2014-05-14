@@ -5,17 +5,13 @@ endif()
 
 project(VTKStatExample)
 
-if(NOT VTK_BINARY_DIR)
-  find_package(VTK REQUIRED)
-  include(${VTK_USE_FILE})
-endif(NOT VTK_BINARY_DIR)
-
-link_directories(${VTK_LIBRARY_DIRS})
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
 
 # Add example use of vtkDescriptiveStatistics
 add_executable(ExampleDescriptiveStatistics ExampleDescriptiveStatistics.cxx)
-target_link_libraries(ExampleDescriptiveStatistics vtkCommonCore vtkCommonSystem vtkCommonDataModel vtkFiltersStatistics)
+target_link_libraries(ExampleDescriptiveStatistics ${VTK_LIBRARIES})
 
 # Add example use of vtkKMeansStatistics
 add_executable(ExampleKMeansStatistics ExampleKMeansStatistics.cxx)
-target_link_libraries(ExampleKMeansStatistics vtkCommonCore vtkCommonSystem vtkCommonDataModel vtkFiltersStatistics)
+target_link_libraries(ExampleKMeansStatistics ${VTK_LIBRARIES})

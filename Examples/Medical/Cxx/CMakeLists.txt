@@ -34,21 +34,19 @@ target_link_libraries(GenerateModelsFromLabels ${VTK_LIBRARIES})
 target_link_libraries(GenerateCubesFromLabels ${VTK_LIBRARIES})
 
 if(BUILD_TESTING)
+  enable_testing()
   if(vtkTestingRendering_LOADED)
+    if("${VTK_TEST_DATA_DIR}" STREQUAL "")
+      message(FATAL_ERROR "Please provide a test data directory.")
+    endif()
     ######## Regression Testing ########
-    set(vtk-example MedicalExamples)
     set(TestMedical1_ARGS ${VTK_TEST_DATA_DIR}/Data/headsq/quarter)
     set(TestMedical2_ARGS ${VTK_TEST_DATA_DIR}/Data/headsq/quarter)
     set(TestMedical3_ARGS ${VTK_TEST_DATA_DIR}/Data/headsq/quarter)
     set(TestMedical4_ARGS ${VTK_TEST_DATA_DIR}/Data/headsq/quarter)
-    vtk_add_test_cxx(${vtk-example}CxxTests tests
-      TestMedical1.cxx
-      TestMedical2.cxx
-      TestMedical3.cxx
-      TestMedical4.cxx
-      )
-    vtk_test_cxx_executable(${vtk-example}CxxTests tests
-      RENDERING_FACTORY
-      )
+    add_test(TestMedical1 Medical1 ${TestMedical1_ARGS})
+    add_test(TestMedical2 Medical2 ${TestMedical2_ARGS})
+    add_test(TestMedical3 Medical3 ${TestMedical3_ARGS})
+    add_test(TestMedical4 Medical4 ${TestMedical4_ARGS})
   endif()
 endif()

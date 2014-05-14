@@ -3,21 +3,10 @@ if(POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW) # CMake 3.0
 endif()
 
-PROJECT (MultiBlock)
+project(MultiBlock)
 
-find_package(VTK COMPONENTS
-  vtkCommonCore
-  vtkFiltersGeometry
-  vtkFiltersSources
-  vtkIOXML
-  vtkInteractionStyle
-  vtkRenderingOpenGL
-  vtkTestingCore
-  vtksys
-)
+find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
-if(vtkTestingCore_LOADED)
- add_executable(MultiBlock MACOSX_BUNDLE MultiBlock.cxx)
- target_link_libraries(MultiBlock ${VTK_LIBRARIES})
-endif()
+add_executable(MultiBlock MACOSX_BUNDLE MultiBlock.cxx)
+target_link_libraries(MultiBlock ${VTK_LIBRARIES})

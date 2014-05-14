@@ -1,37 +1,24 @@
-PROJECT (Charts)
+cmake_minimum_required(VERSION 2.8)
+project(Charts)
 
-IF(NOT VTK_BINARY_DIR)
-FIND_PACKAGE(VTK REQUIRED)
-IF(NOT VTK_USE_CHARTS)
-  MESSAGE(FATAL_ERROR "Example ${PROJECT_NAME} requires VTK_USE_CHARTS.")
-ENDIF(NOT VTK_USE_CHARTS)
-INCLUDE(${VTK_USE_FILE})
-ENDIF(NOT VTK_BINARY_DIR)
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
 
-IF(VTK_USE_VIEWS)
-  ADD_EXECUTABLE(GraphItem GraphItem.cxx vtkGraphItem.cxx)
-  TARGET_LINK_LIBRARIES(GraphItem vtkCharts)
-ENDIF(VTK_USE_VIEWS)
+add_executable(GraphItem GraphItem.cxx vtkGraphItem.cxx)
+target_link_libraries(GraphItem ${VTK_LIBRARIES})
 
-ADD_EXECUTABLE(PiecewiseItem PiecewiseItem.cxx)
-TARGET_LINK_LIBRARIES(PiecewiseItem vtkCharts)
+add_executable(PiecewiseItem PiecewiseItem.cxx)
+target_link_libraries(PiecewiseItem ${VTK_LIBRARIES})
 
-IF(VTK_USE_QVTK)
-  FIND_PACKAGE(Qt4 REQUIRED)
-  INCLUDE(${QT_USE_FILE})
-  INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
-  ADD_EXECUTABLE(QChartTable QChartTable.cxx)
-  TARGET_LINK_LIBRARIES(QChartTable
-    QVTK
-    ${QT_LIBRARIES}
-    vtkRendering
-    vtkCharts
-  )
-  ADD_EXECUTABLE(QScalarsToColors QScalarsToColors.cxx)
-  TARGET_LINK_LIBRARIES(QScalarsToColors
-    QVTK
-    ${QT_LIBRARIES}
-    vtkRendering
-    vtkCharts
-  )
-ENDIF(VTK_USE_QVTK)
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
+include_directories(${QT_INCLUDE_DIR})
+add_executable(QChartTable QChartTable.cxx)
+target_link_libraries(QChartTable
+  ${QT_LIBRARIES}
+  ${VTK_LIBRARIES} )
+
+add_executable(QScalarsToColors QScalarsToColors.cxx)
+target_link_libraries(QScalarsToColors
+  ${QT_LIBRARIES}
+  ${VTK_LIBRARIES} )

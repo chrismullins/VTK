@@ -18,6 +18,7 @@
 #include "vtkMath.h"
 #include "vtkKMeansStatistics.h"
 #include "vtkStdString.h"
+#include "vtkSmartPointer.h"
 #include "vtkTimerLog.h"
 
 #include <vtksys/ios/sstream>
@@ -35,15 +36,16 @@ int main( int, char *[] )
   vtkMath::RandomSeed( static_cast<int>( vtkTimerLog::GetUniversalTime() ) );
 
   // Generate an input table that contains samples of mutually independent random variables over [0, 1]
-  vtkTable* inputData = vtkTable::New();
-  vtkDoubleArray* doubleArray;
+  vtkSmartPointer<vtkTable> inputData =
+    vtkSmartPointer<vtkTable>::New();
+  vtkSmartPointer<vtkDoubleArray> doubleArray;
 
   int numComponents = 1;
   for ( int c = 0; c < nDim; ++ c )
     {
     vtksys_ios::ostringstream colName;
     colName << "coord " << c;
-    doubleArray = vtkDoubleArray::New();
+    doubleArray = vtkSmartPointer<vtkDoubleArray>::New();
     doubleArray->SetNumberOfComponents( numComponents );
     doubleArray->SetName( colName.str().c_str() );
     doubleArray->SetNumberOfTuples( nVals );
@@ -57,15 +59,15 @@ int main( int, char *[] )
       }
 
     inputData->AddColumn( doubleArray );
-    doubleArray->Delete();
     }
 
-  vtkTable* paramData = vtkTable::New();
-  vtkIdTypeArray* paramCluster;
-  vtkDoubleArray* paramArray;
+  vtkSmartPointer<vtkTable> paramData =
+    vtkSmartPointer<vtkTable>::New();
+  vtkSmartPointer<vtkIdTypeArray> paramCluster;
+  vtkSmartPointer<vtkDoubleArray> paramArray;
   const int numRuns = 5;
   const int numClustersInRun[] = { 5, 2, 3, 4, 5 };
-  paramCluster = vtkIdTypeArray::New();
+  paramCluster = vtkSmartPointer<vtkIdTypeArray>::New();
   paramCluster->SetName( "K" );
 
   for( int curRun = 0; curRun < numRuns; curRun++ )
@@ -76,13 +78,12 @@ int main( int, char *[] )
       }
     }
   paramData->AddColumn( paramCluster );
-  paramCluster->Delete();
 
   for ( int c = 0; c < 5; ++ c )
     {
     vtksys_ios::ostringstream colName;
     colName << "coord " << c;
-    paramArray = vtkDoubleArray::New();
+    paramArray = vtkSmartPointer<vtkDoubleArray>::New();
     paramArray->SetNumberOfComponents( numComponents );
     paramArray->SetName( colName.str().c_str() );
 
@@ -97,26 +98,26 @@ int main( int, char *[] )
         }
       }
     paramData->AddColumn( paramArray );
-    paramArray->Delete();
     }
 
   // Set k-means statistics algorithm and its input data port
-  vtkKMeansStatistics* haruspex = vtkKMeansStatistics::New();
+  vtkSmartPointer<vtkKMeansStatistics> haruspex =
+    vtkSmartPointer<vtkKMeansStatistics>::New();
 
   // First verify that absence of input does not cause trouble
-  cout << "## Verifying that absence of input does not cause trouble... ";
+  std:cout << "## Verifying that absence of input does not cause trouble... ";
   haruspex->Update();
-  cout << "done.\n";
+  std::cout << "done.\n";
 
   // Prepare first test with data
-  haruspex->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, inputData );
+  haruspex->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, inputData );
   haruspex->SetColumnStatus( inputData->GetColumnName( 0 ) , 1 );
   haruspex->SetColumnStatus( inputData->GetColumnName( 2 ) , 1 );
   haruspex->SetColumnStatus( "Testing", 1 );
   haruspex->RequestSelectedColumns();
   haruspex->SetDefaultNumberOfClusters( 3 );
 
-  cout << "## Testing with no input data:"
+  std::cout << "## Testing with no input data:"
            << "\n";
   // Test Learn and Derive options
   haruspex->SetLearnOption( true );
@@ -129,7 +130,8 @@ int main( int, char *[] )
                         haruspex->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
   for ( unsigned int b = 0; b < outputMetaDS->GetNumberOfBlocks(); ++ b )
     {
-    vtkTable* outputMeta = vtkTable::SafeDownCast( outputMetaDS->GetBlock( b ) );
+    vtkSmartPointer<vtkTable> outputMeta =
+      vtkTable::SafeDownCast( outputMetaDS->GetBlock( b ) );
     if ( b == 0 )
       {
 
@@ -139,7 +141,7 @@ int main( int, char *[] )
         testIntValue += outputMeta->GetValueByName( r, "Cardinality" ).ToInt();
         }
 
-      cout << "## Computed clusters (cardinality: "
+      std::cout << "## Computed clusters (cardinality: "
            << testIntValue
            << " / run):\n";
 
@@ -155,16 +157,16 @@ int main( int, char *[] )
       }
     else
       {
-      cout << "## Ranked cluster: "
+      std::cout << "## Ranked cluster: "
            << "\n";
       }
 
     outputMeta->Dump();
-    cout << "\n";
+    std::cout << "\n";
     }
 
 
-  haruspex->SetInput( vtkStatisticsAlgorithm::LEARN_PARAMETERS, paramData );
+  haruspex->SetInputData( vtkStatisticsAlgorithm::LEARN_PARAMETERS, paramData );
   cout << "## Testing with input table:"
            << "\n";
 
@@ -182,7 +184,8 @@ int main( int, char *[] )
                  haruspex->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
   for ( unsigned int b = 0; b < outputMetaDS->GetNumberOfBlocks(); ++ b )
     {
-    vtkTable* outputMeta = vtkTable::SafeDownCast( outputMetaDS->GetBlock( b ) );
+    vtkSmartPointer<vtkTable> outputMeta =
+      vtkTable::SafeDownCast( outputMetaDS->GetBlock( b ) );
     if ( b == 0 )
       {
       vtkIdType r = 0;
@@ -207,7 +210,7 @@ int main( int, char *[] )
         testStatus = 1;
         }
 
-      cout << "## Computed clusters (cardinality: "
+      std::cout << "## Computed clusters (cardinality: "
            << testIntValue
            << " / run):\n";
 
@@ -223,19 +226,20 @@ int main( int, char *[] )
       }
     else
       {
-      cout << "## Ranked cluster: "
+      std::cout << "## Ranked cluster: "
            << "\n";
       }
 
     outputMeta->Dump();
-    cout << "\n";
+    std::cout << "\n";
     }
 
-  cout << "=================== ASSESS ==================== " << endl;
-  vtkMultiBlockDataSet* paramsTables = vtkMultiBlockDataSet::New();
+  std::cout << "=================== ASSESS ==================== " << std::endl;
+  vtkSmartPointer<vtkMultiBlockDataSet> paramsTables =
+    vtkSmartPointer<vtkMultiBlockDataSet>::New();
   paramsTables->ShallowCopy( outputMetaDS );
 
-  haruspex->SetInput( vtkStatisticsAlgorithm::INPUT_MODEL, paramsTables );
+  haruspex->SetInputData( vtkStatisticsAlgorithm::INPUT_MODEL, paramsTables );
 
   // Test Assess option only (do not recalculate nor rederive a model)
   haruspex->SetLearnOption( false );
@@ -243,12 +247,8 @@ int main( int, char *[] )
   haruspex->SetTestOption( false );
   haruspex->SetAssessOption( true );
   haruspex->Update();
-  vtkTable* outputData = haruspex->GetOutput();
-  outputData->Dump();
-  paramsTables->Delete();
-  paramData->Delete();
-  inputData->Delete();
-  haruspex->Delete();
+  vtkSmartPointer<vtkTable> outputData =
+    haruspex->GetOutput();
 
   return testStatus;
 }

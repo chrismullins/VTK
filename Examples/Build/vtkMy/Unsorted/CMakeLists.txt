@@ -13,18 +13,7 @@ SET (Unsorted_SRCS
 
 # Create the vtkmyUnsorted C++ library.
 ADD_LIBRARY (vtkmyUnsorted ${Unsorted_SRCS})
-TARGET_LINK_LIBRARIES(vtkmyUnsorted vtkmyImaging vtkGraphics vtkIO)
-
-IF (VTK_USE_PARALLEL)
-  TARGET_LINK_LIBRARIES (vtkmyUnsorted vtkParallel)
-ENDIF (VTK_USE_PARALLEL)
-
-IF (VTK_USE_RENDERING)
-  TARGET_LINK_LIBRARIES (vtkmyUnsorted vtkRendering)
-  TARGET_LINK_LIBRARIES (vtkmyUnsorted vtkVolumeRendering)
-  TARGET_LINK_LIBRARIES (vtkmyUnsorted vtkHybrid)
-  TARGET_LINK_LIBRARIES (vtkmyUnsorted vtkWidgets)
-ENDIF (VTK_USE_RENDERING)
+TARGET_LINK_LIBRARIES(vtkmyUnsorted vtkmyImaging ${VTK_LIBRARIES})
 
 # Create the vtkmyUnsorted Tcl library.
 IF (VTK_WRAP_TCL AND VTKMY_WRAP_TCL)

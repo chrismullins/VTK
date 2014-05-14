@@ -27,32 +27,23 @@ add_executable(Delaunay3DAlpha MACOSX_BUNDLE Delaunay3DAlpha.cxx)
 target_link_libraries(Delaunay3DAlpha ${VTK_LIBRARIES})
 
 if(BUILD_TESTING)
+  enable_testing()
   if(vtkTestingRendering_LOADED)
+    if("${VTK_TEST_DATA_DIR}" STREQUAL "")
+      message(FATAL_ERROR "Please provide a test data directory.")
+    endif()
     ######## Regression Testing ########
-    set(vtk-example ModellingExamples)
-    set(TestFinance_ARGS "DATA{${VTK_TEST_INPUT_DIR}/financial.txt}")
+    set(TestFinance_ARGS "${VTK_TEST_DATA_DIR}/Data/financial.txt")
     set(TestDelaunay3D_ARGS
-      "DATA{${VTK_TEST_INPUT_DIR}/cow.vtp}"
-      ${VTK_TEST_OUTPUT_DIR}/Delaunay3D.vtu
+      "${VTK_TEST_DATA_DIR}/Data/cow.vtp"
+      ${CMAKE_BINARY_DIR}/Delaunay3D.vtu
       )
     set(TestDelaunay3DAlpha_ARGS
-      .5 "DATA{${VTK_TEST_INPUT_DIR}/cow.vtp}"
-      ${VTK_TEST_OUTPUT_DIR}/Delaunay3DAlpha.vtu
+      .5 "${VTK_TEST_DATA_DIR}/Data/cow.vtp"
+      ${CMAKE_BINARY_DIR}/Delaunay3DAlpha.vtu
       )
-    vtk_add_test_cxx(${vtk-example}CxxTests data_tests
-      TestFinance.cxx
-      )
-    vtk_add_test_cxx(${vtk-example}CxxTests tests
-      NO_DATA NO_VALID NO_OUTPUT
-      TestDelaunay3D.cxx
-      TestDelaunay3DAlpha.cxx
-      )
-    set(all_tests
-      ${data_tests}
-      ${tests}
-      )
-    vtk_test_cxx_executable(${vtk-example}CxxTests all_tests
-      RENDERING_FACTORY
-      )
+    add_test(TestFinance finance ${TestFinance_ARGS})
+    add_test(TestDelaunay3D Delaunay3D ${TestDelaunay3D_ARGS})
+    add_test(TestDelaunay3DAlpha Delaunay3DAlpha ${TestDelaunay3DAlpha_ARGS})
   endif()
 endif()

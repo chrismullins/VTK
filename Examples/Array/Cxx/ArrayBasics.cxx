@@ -1,18 +1,20 @@
 #include <vtkArrayPrint.h>
 #include <vtkDenseArray.h>
+#include <vtkSmartPointer.h>
 #include <vtkSparseArray.h>
 
 int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
 {
-  ////////////////////////////////////////////////////////
   // Creating N-Way Arrays
 
   // Creating a dense array of 10 integers:
-  vtkDenseArray<vtkIdType>* array = vtkDenseArray<vtkIdType>::New();
+  vtkSmartPointer< vtkDenseArray<vtkIdType> > array =
+    vtkSmartPointer< vtkDenseArray<vtkIdType> >::New();
   array->Resize(10);
 
   // Creating a dense 20 x 30 matrix:
-  vtkDenseArray<double>* matrix = vtkDenseArray<double>::New();
+  vtkSmartPointer< vtkDenseArray<double> > matrix =
+    vtkSmartPointer< vtkDenseArray<double> >::New();
   matrix->Resize(20, 30);
 
   // Creating a sparse 10 x 20 x 30 x 40 tensor:
@@ -22,10 +24,11 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
   extents[1] = vtkArrayRange(0, 20);
   extents[2] = vtkArrayRange(0, 30);
   extents[3] = vtkArrayRange(0, 40);
-  vtkSparseArray<vtkIdType>* tensor = vtkSparseArray<vtkIdType>::New();
+
+  vtkSmartPointer< vtkSparseArray<vtkIdType> > tensor =
+    vtkSmartPointer< vtkSparseArray<vtkIdType> >::New();
   tensor->Resize(extents);
 
-  ////////////////////////////////////////////////////////
   // Initializing N-Way Arrays
 
   // Filling a dense array with ones:
@@ -36,7 +39,6 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
 
   // There's nothing to do for a sparse array - it's already empty.
 
-  ////////////////////////////////////////////////////////
   // Assigning N-Way Array Values
 
   // Assign array value [5]:
@@ -58,33 +60,27 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
   // Accessing N-Way Array Values
 
   // Access array value [5]:
-  cout << "array[5]: " << array->GetValue(5) << "\n\n";
+  std::cout << "array[5]: " << array->GetValue(5) << "\n\n";
 
   // Access matrix value [4, 3]:
-  cout << "matrix[4, 3]: " << matrix->GetValue(4, 3) << "\n\n";
+  std::cout << "matrix[4, 3]: " << matrix->GetValue(4, 3) << "\n\n";
 
   // Access tensor value [3, 7, 1, 2]:
-  cout << "tensor[3, 7, 1, 2]: " << tensor->GetValue(coordinates) << "\n\n";
+  std::cout << "tensor[3, 7, 1, 2]: " << tensor->GetValue(coordinates) << "\n\n";
 
-  ////////////////////////////////////////////////////////
   // Printing N-Way Arrays
 
-  cout << "array:\n";
-  vtkPrintVectorFormat(cout, array);
-  cout << "\n";
+  std::cout << "array:\n";
+  vtkPrintVectorFormat(std::cout, vtkTypedArray<vtkIdType>::SafeDownCast(array));
+  std::cout << "\n";
 
-  cout << "matrix:\n";
-  vtkPrintMatrixFormat(cout, matrix);
-  cout << "\n";
+  std::cout << "matrix:\n";
+  vtkPrintMatrixFormat(std::cout, vtkTypedArray<double>::SafeDownCast(matrix));
+  std::cout << "\n";
 
-  cout << "tensor:\n";
-  vtkPrintCoordinateFormat(cout, tensor);
-  cout << "\n";
+  std::cout << "tensor:\n";
+  vtkPrintCoordinateFormat(std::cout, vtkTypedArray<vtkIdType>::SafeDownCast(tensor));
+  std::cout << "\n";
 
-  // Cleanup array instances ...
-  tensor->Delete();
-  matrix->Delete();
-  array->Delete();
-
-  return 0;
+  return EXIT_SUCCESS;
 }

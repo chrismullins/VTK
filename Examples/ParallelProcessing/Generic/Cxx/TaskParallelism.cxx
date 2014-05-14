@@ -26,6 +26,7 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
+#include "vtkSmartPointer.h"
 
 // This function sets up properties common to both processes
 // and executes the task corresponding to the current process
@@ -46,7 +47,8 @@ void process(vtkMultiProcessController* controller, void* vtkNotUsed(arg))
 
 
   // Setup camera
-  vtkCamera* cam = vtkCamera::New();
+  vtkSmartPointer<vtkCamera> cam =
+    vtkSmartPointer<vtkCamera>::New();
   cam->SetPosition( -0.6105, 1.467, -6.879 );
   cam->SetFocalPoint( -0.0617558, 0.127043, 0 );
   cam->SetViewUp( -0.02, 0.98, 0.193 );
@@ -54,33 +56,26 @@ void process(vtkMultiProcessController* controller, void* vtkNotUsed(arg))
   cam->Dolly(0.8);
 
   // Create the render objects
-  vtkRenderWindow* renWin = vtkRenderWindow::New();
+  vtkSmartPointer<vtkRenderWindow> renWin =
+    vtkSmartPointer<vtkRenderWindow>::New();
   renWin->SetSize( WINDOW_WIDTH, WINDOW_HEIGHT );
 
-  vtkRenderWindowInteractor* iren = vtkRenderWindowInteractor::New();
+  vtkSmartPointer<vtkRenderWindowInteractor> iren =
+    vtkSmartPointer<vtkRenderWindowInteractor>::New();
   iren->SetRenderWindow(renWin);
 
   // This class allows all processes to composite their images.
   // The root process then displays it in it's render window.
-  vtkCompositeRenderManager* tc = vtkCompositeRenderManager::New();
+  vtkSmartPointer<vtkCompositeRenderManager> tc =
+    vtkSmartPointer<vtkCompositeRenderManager>::New();
   tc->SetRenderWindow(renWin);
 
   // Generate the pipeline see task1.cxx and task2.cxx)
-  vtkPolyDataMapper* mapper = (*task)(renWin, EXTENT, cam);
+  vtkSmartPointer<vtkPolyDataMapper> mapper = (*task)(renWin, EXTENT, cam);
 
   // Only the root process will have an active interactor. All
   // the other render windows will be slaved to the root.
   tc->StartInteractor();
-
-  // Clean-up
-  iren->Delete();
-  if (mapper)
-    {
-    mapper->Delete();
-    }
-  renWin->Delete();
-  cam->Delete();
-
 }
 
 
@@ -89,7 +84,8 @@ int main( int argc, char* argv[] )
 
   // Note that this will create a vtkMPIController if MPI
   // is configured, vtkThreadedController otherwise.
-  vtkMPIController* controller = vtkMPIController::New();
+  vtkSmartPointer<vtkMPIController> controller =
+    vtkSmartPointer<vtkMPIController>::New();
   controller->Initialize(&argc, &argv);
 
   // When using MPI, the number of processes is determined
@@ -106,7 +102,6 @@ int main( int argc, char* argv[] )
     {
     cerr << "This example requires two processes." << endl;
     controller->Finalize();
-    controller->Delete();
     return 1;
     }
 
@@ -117,16 +112,6 @@ int main( int argc, char* argv[] )
 
   // Clean-up and exit
   controller->Finalize();
-  controller->Delete();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
-
-
-
-
-
-
-
-
-

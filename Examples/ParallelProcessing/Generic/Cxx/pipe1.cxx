@@ -17,6 +17,7 @@
 #include "vtkImageData.h"
 #include "vtkOutputPort.h"
 #include "vtkRTAnalyticSource.h"
+#include "vtkSmartPointer.h"
 
 #include "PipelineParallelism.h"
 
@@ -27,7 +28,8 @@ static void IncrementXFreq(vtkObject *vtkNotUsed( caller ),
                            unsigned long vtkNotUsed(eventId),
                            void *sr, void *)
 {
-  vtkRTAnalyticSource* source1 = reinterpret_cast<vtkRTAnalyticSource*>(sr);
+  vtkSmartPointer<vtkRTAnalyticSource> source1 =
+    vtkSmartPointer<vtkRTAnalyticSource>::New();
   XFreq = XFreq + 10;
   source1->SetXFreq(XFreq);
 }
@@ -42,7 +44,8 @@ void pipe1(vtkMultiProcessController* vtkNotUsed(controller),
   int iextent = static_cast<int>(extent);
 
   // Synthetic image source.
-  vtkRTAnalyticSource* source1 = vtkRTAnalyticSource::New();
+  vtkSmartPointer<vtkRTAnalyticSource> source1 =
+    vtkSmartPointer<vtkRTAnalyticSource>::New();
   source1->SetWholeExtent (-1*iextent, iextent, -1*iextent, iextent,
                            -1*iextent, iextent );
   source1->SetCenter(0, 0, 0);
@@ -57,24 +60,18 @@ void pipe1(vtkMultiProcessController* vtkNotUsed(controller),
   source1->GetOutput()->SetSpacing(2.0/extent,2.0/extent,2.0/extent);
 
   // Output port
-  vtkOutputPort* op = vtkOutputPort::New();
+  vtkSmartPointer<vtkOutputPort> op =
+    vtkSmartPointer<vtkOutputPort>::New();
   op->SetInputConnection(source1->GetOutputPort());
   op->SetTag(11);
 
   // Called every time data is requested from the output port
-  vtkCallbackCommand *cbc = vtkCallbackCommand::New();
+  vtkSmartPointer<vtkCallbackCommand> cbc =
+    vtkSmartPointer<vtkCallbackCommand>::New();
   cbc->SetCallback(IncrementXFreq);
-  cbc->SetClientData((void *)source1);
+  cbc->SetClientDataI(source1->GetOutput());
   op->AddObserver(vtkCommand::EndEvent,cbc);
-  cbc->Delete();
 
   // Process requests
   op->WaitForUpdate();
-
-  // Cleanup
-  op->Delete();
-  source1->Delete();
-
 }
-
-

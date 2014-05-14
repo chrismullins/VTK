@@ -20,6 +20,7 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderer.h"
+#include "vtkSmartPointer.h"
 
 #include "PipelineParallelism.h"
 
@@ -29,27 +30,33 @@ void pipe2(vtkMultiProcessController* vtkNotUsed(controller),
            void* vtkNotUsed(arg))
 {
   // Input port
-  vtkInputPort* ip = vtkInputPort::New();
+  vtkSmartPointer<vtkInputPort> ip =
+    vtkSmartPointer<vtkInputPort>::New();
   ip->SetRemoteProcessId(0);
   ip->SetTag(11);
 
   // Iso-surface
-  vtkContourFilter* cf = vtkContourFilter::New();
+  vtkSmartPointer<vtkContourFilter> cf =
+    vtkSmartPointer<vtkContourFilter>::New();
   cf->SetInput(ip->GetImageDataOutput());
   cf->SetNumberOfContours(1);
   cf->SetValue(0, 220);
 
   // Rendering objects
-  vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> mapper =
+    vtkSmartPointer<vtkPolyDataMapper>::New();
   mapper->SetInputConnection(cf->GetOutputPort());
 
-  vtkActor* actor = vtkActor::New();
+  vtkSmartPointer<vtkActor> actor =
+    vtkSmartPointer<vtkActor>::New();
   actor->SetMapper(mapper);
 
-  vtkRenderer* ren = vtkRenderer::New();
+  vtkSmartPointer<vtkRenderer> ren =
+    vtkSmartPointer<vtkRenderer>::New();
   ren->AddActor(actor);
 
-  vtkRenderWindow* renWin = vtkRenderWindow::New();
+  vtkSmartPointer<vtkRenderWindow> renWin =
+    vtkSmartPointer<vtkRenderWindow>::New();
   renWin->AddRenderer(ren);
 
   // Normally, the Render() call on a RenderWindow() calls
@@ -57,13 +64,14 @@ void pipe2(vtkMultiProcessController* vtkNotUsed(controller),
   // for this example because with each Update(), the data
   // changes. For this reason, we will use a separate PolyData
   // object and (shallow) copy the data to it.
-  vtkPolyData* pd = vtkPolyData::New();
+  vtkSmartPointer<vtkPolyData> pd =
+    vtkSmartPointer<vtkPolyData>::New();
   mapper->SetInput(pd);
 
   // Prime the pipeline. Tell the producer to start computing.
   ip->Update();
 
-  // Get the first data, adjust camera appropriatly
+  // Get the first data, adjust camera appropriately
   cf->GetOutput()->Update();
   pd->ShallowCopy(cf->GetOutput());
   ren->ResetCamera();
@@ -81,15 +89,4 @@ void pipe2(vtkMultiProcessController* vtkNotUsed(controller),
     }
   // Tell the producer that we are done.
   ip->GetController()->TriggerRMI(0, vtkMultiProcessController::BREAK_RMI_TAG);
-
-  pd->Delete();
-  ip->Delete();
-  cf->Delete();
-  mapper->Delete();
-  actor->Delete();
-  ren->Delete();
-  renWin->Delete();
-
 }
-
-

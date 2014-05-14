@@ -3,18 +3,9 @@ if(POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW) # CMake 3.0
 endif()
 
-PROJECT (Rendering)
+project(Rendering)
 
-if(NOT VTK_SOURCE_DIR)
-  message(ERROR " Cannot build Rendering examples without VTK_SOURCE_DIR")
-endif()
-
-find_package(VTK COMPONENTS
-  vtkCommonCore
-  vtkFiltersSources
-  vtkInteractionStyle
-  vtkRenderingOpenGL
-)
+find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 
 set(RENDERING_EXAMPLES_SRCS
@@ -22,7 +13,6 @@ set(RENDERING_EXAMPLES_SRCS
   SpecularSpheres
   DiffuseSpheres
   AmbientSpheres
-#  MaterialObjects
   )
 
 foreach(name ${RENDERING_EXAMPLES_SRCS})

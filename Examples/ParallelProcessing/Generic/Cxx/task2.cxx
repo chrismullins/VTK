@@ -16,6 +16,7 @@
 
 #include "vtkImageData.h"
 #include "vtkPolyDataMapper.h"
+#include "vtkSmartPointer.h"
 
 // Task 2 for TaskParallelism.
 // See TaskParallelism.cxx for more information.
@@ -27,7 +28,8 @@ vtkPolyDataMapper* task2(vtkRenderWindow* renWin, double data,
   // The pipeline
 
   // Synthetic image source.
-  vtkRTAnalyticSource* source1 = vtkRTAnalyticSource::New();
+  vtkSmartPointer<vtkRTAnalyticSource> source1 =
+    vtkSmartPointer<vtkRTAnalyticSource>::New();
   source1->SetWholeExtent (-1*iextent, iextent, -1*iextent, iextent,
                            -1*iextent, iextent );
   source1->SetCenter(0, 0, 0);
@@ -42,28 +44,33 @@ vtkPolyDataMapper* task2(vtkRenderWindow* renWin, double data,
   source1->GetOutput()->SetSpacing(2.0/extent,2.0/extent,2.0/extent);
 
   // Gradient vector.
-  vtkImageGradient* grad = vtkImageGradient::New();
+  vtkSmartPointer<vtkImageGradient> grad =
+    vtkSmartPointer<vtkImageGradient>::New();
   grad->SetDimensionality( 3 );
   grad->SetInputConnection(source1->GetOutputPort());
 
-  vtkImageShrink3D* mask = vtkImageShrink3D::New();
+  vtkSmartPointer<vtkImageShrink3D> mask =
+    vtkSmartPointer<vtkImageShrink3D>::New();
   mask->SetInputConnection(grad->GetOutputPort());
   mask->SetShrinkFactors(5, 5, 5);
 
 
   // Label the scalar field as the active vectors.
-  vtkAssignAttribute* aa = vtkAssignAttribute::New();
+  vtkSmartPointer<vtkAssignAttribute> aa =
+    vtkSmartPointer<vtkAssignAttribute>::New();
   aa->SetInputConnection(mask->GetOutputPort());
   aa->Assign(vtkDataSetAttributes::SCALARS, vtkDataSetAttributes::VECTORS,
              vtkAssignAttribute::POINT_DATA);
 
-  vtkGlyphSource2D* arrow = vtkGlyphSource2D::New();
+  vtkSmartPointer<vtkGlyphSource2D> arrow =
+    vtkSmartPointer<vtkGlyphSource2D>::New();
   arrow->SetGlyphTypeToArrow();
-  arrow->SetScale(0.2);
+  arrow->SetScale(1.2);
   arrow->FilledOff();
 
   // Glyph the gradient vector (with arrows)
-  vtkGlyph3D* glyph = vtkGlyph3D::New();
+  vtkSmartPointer<vtkGlyph3D> glyph =
+    vtkSmartPointer<vtkGlyph3D>::New();
   glyph->SetInputConnection(aa->GetOutputPort());
   glyph->SetSourceConnection(arrow->GetOutputPort());
   glyph->ScalingOff();
@@ -72,35 +79,22 @@ vtkPolyDataMapper* task2(vtkRenderWindow* renWin, double data,
   glyph->SetColorModeToColorByVector();
 
   // Rendering objects.
-  vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+  vtkSmartPointer<vtkPolyDataMapper> mapper =
+    vtkSmartPointer<vtkPolyDataMapper>::New();
   mapper->SetInputConnection(glyph->GetOutputPort());
   mapper->SetScalarRange(50, 180);
   mapper->ImmediateModeRenderingOn();
 
-  vtkActor* actor = vtkActor::New();
+  vtkSmartPointer<vtkActor> actor =
+    vtkSmartPointer<vtkActor>::New();
   actor->SetMapper(mapper);
 
-  vtkRenderer* ren = vtkRenderer::New();
+  vtkSmartPointer<vtkRenderer> ren =
+    vtkSmartPointer<vtkRenderer>::New();
   renWin->AddRenderer(ren);
 
   ren->AddActor(actor);
   ren->SetActiveCamera( cam );
 
-  // Cleanup
-  source1->Delete();
-  grad->Delete();
-  aa->Delete();
-  mask->Delete();
-  glyph->Delete();
-  arrow->Delete();
-  actor->Delete();
-  ren->Delete();
-
   return mapper;
 }
-
-
-
-
-
-

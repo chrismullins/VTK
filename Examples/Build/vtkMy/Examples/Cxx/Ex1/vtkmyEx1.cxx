@@ -23,6 +23,7 @@
 #include "vtkBar.h"
 #include "vtkBar2.h"
 #include "vtkImageFoo.h"
+#include "vtkSmartPointer.h"
 
 int main()
 {
@@ -30,35 +31,31 @@ int main()
   //
   // Next we create an instance of vtkBar
   //
-  cout << "Create vtkBar object and print it." << endl;
+  std::cout << "Create vtkBar object and print it." << std::endl;
 
-  vtkBar *bar = vtkBar::New();
-  bar->Print(cout);
+  vtkSmartPointer<vtkBar> bar =
+    vtkSmartPointer<vtkBar>::New();
+  bar->Print(std::cout);
 
   //
   // Then we create an instance of vtkBar2
   //
-  cout << "Create vtkBar2 object and print it." << endl;
+  std::cout << "Create vtkBar2 object and print it." << std::endl;
 
-  vtkBar2 *bar2 = vtkBar2::New();
-  bar2->Print(cout);
+  vtkSmartPointer<vtkBar2> bar2 =
+    vtkSmartPointer<vtkBar2>::New();
+  bar2->Print(std::cout);
 
   //
   // And we create an instance of vtkImageFoo
   //
-  cout << "Create vtkImageFoo object and print it." << endl;
+  std::cout << "Create vtkImageFoo object and print it." << std::endl;
 
-  vtkImageFoo *imagefoo = vtkImageFoo::New();
-  imagefoo->Print(cout);
+  vtkSmartPointer<vtkImageFoo> imagefoo =
+    vtkSmartPointer<vtkImageFoo>::New();
+  imagefoo->Print(std::cout);
 
-  cout << "Looks good ?" << endl;
+  std::cout << "Looks good ?" << std::endl;
 
-  //
-  // Free up any objects we created
-  //
-  bar->Delete();
-  bar2->Delete();
-  imagefoo->Delete();
-
-  return 0;
+  return EXIT_SUCCESS;
 }

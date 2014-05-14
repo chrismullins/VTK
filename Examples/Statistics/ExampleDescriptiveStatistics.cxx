@@ -15,6 +15,7 @@
 #include "vtkMath.h"
 #include "vtkMultiBlockDataSet.h"
 #include "vtkStringArray.h"
+#include "vtkSmartPointer.h"
 #include "vtkTable.h"
 #include "vtkTimerLog.h"
 #include "vtkDescriptiveStatistics.h"
@@ -98,15 +99,18 @@ int main( int, char *[] )
   // Test with entire data set
   int nVals1 = 32;
 
-  vtkDoubleArray* dataset1Arr = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> dataset1Arr =
+    vtkSmartPointer<vtkDoubleArray>::New();
   dataset1Arr->SetNumberOfComponents( 1 );
   dataset1Arr->SetName( "Metric 0" );
 
-  vtkDoubleArray* dataset2Arr = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> dataset2Arr =
+    vtkSmartPointer<vtkDoubleArray>::New();
   dataset2Arr->SetNumberOfComponents( 1 );
   dataset2Arr->SetName( "Metric 1" );
 
-  vtkDoubleArray* dataset3Arr = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> dataset3Arr =
+    vtkSmartPointer<vtkDoubleArray>::New();
   dataset3Arr->SetNumberOfComponents( 1 );
   dataset3Arr->SetName( "Metric 2" );
 
@@ -118,13 +122,11 @@ int main( int, char *[] )
     dataset3Arr->InsertNextValue( -1. );
     }
 
-  vtkTable* datasetTable1 = vtkTable::New();
+  vtkSmartPointer<vtkTable> datasetTable1 =
+    vtkSmartPointer<vtkTable>::New();
   datasetTable1->AddColumn( dataset1Arr );
-  dataset1Arr->Delete();
   datasetTable1->AddColumn( dataset2Arr );
-  dataset2Arr->Delete();
   datasetTable1->AddColumn( dataset3Arr );
-  dataset3Arr->Delete();
 
   // Pairs of interest
   int nMetrics = 3;
@@ -143,16 +145,16 @@ int main( int, char *[] )
   double stdevs1[] = { sqrt( 5.9828629 ), sqrt( 7.548397 ), 0. };
 
   // Set descriptive statistics algorithm and its input data port
-  vtkDescriptiveStatistics* ds1 = vtkDescriptiveStatistics::New();
+  vtkSmartPointer<vtkDescriptiveStatistics> ds1 =
+    vtkSmartPointer<vtkDescriptiveStatistics>::New();
 
   // First verify that absence of input does not cause trouble
-  cout << "\n## Verifying that absence of input does not cause trouble... ";
+  std::cout << "\n## Verifying that absence of input does not cause trouble... ";
   ds1->Update();
-  cout << "done.\n";
+  std::cout << "done.\n";
 
   // Prepare first test with data
-  ds1->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, datasetTable1 );
-  datasetTable1->Delete();
+  ds1->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, datasetTable1 );
 
   // Select Columns of Interest
   for ( int i = 0; i< nMetrics; ++ i )
@@ -169,19 +171,24 @@ int main( int, char *[] )
   ds1->Update();
 
   // Get output data and meta tables
-  vtkTable* outputData1 = ds1->GetOutput( vtkStatisticsAlgorithm::OUTPUT_DATA );
-  vtkMultiBlockDataSet* outputMetaDS1 = vtkMultiBlockDataSet::SafeDownCast( ds1->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
-  vtkTable* outputPrimary1 = vtkTable::SafeDownCast( outputMetaDS1->GetBlock( 0 ) );
-  vtkTable* outputDerived1 = vtkTable::SafeDownCast( outputMetaDS1->GetBlock( 1 ) );
-  vtkTable* outputTest1 = ds1->GetOutput( vtkStatisticsAlgorithm::OUTPUT_TEST );
+  vtkSmartPointer<vtkTable> outputData1 =
+    ds1->GetOutput( vtkStatisticsAlgorithm::OUTPUT_DATA );
+  vtkSmartPointer<vtkMultiBlockDataSet> outputMetaDS1 =
+    vtkMultiBlockDataSet::SafeDownCast( ds1->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
+  vtkSmartPointer<vtkTable> outputPrimary1 =
+    vtkTable::SafeDownCast( outputMetaDS1->GetBlock( 0 ) );
+  vtkSmartPointer<vtkTable> outputDerived1 =
+    vtkTable::SafeDownCast( outputMetaDS1->GetBlock( 1 ) );
+  vtkSmartPointer<vtkTable> outputTest1 =
+    ds1->GetOutput( vtkStatisticsAlgorithm::OUTPUT_TEST );
 
   cout << "\n## Calculated the following primary statistics for first data set:\n";
   for ( vtkIdType r = 0; r < outputPrimary1->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputPrimary1->GetNumberOfColumns(); ++ i )
       {
-      cout << outputPrimary1->GetColumnName( i )
+      std::cout << outputPrimary1->GetColumnName( i )
            << "="
            << outputPrimary1->GetValue( r, i ).ToString()
            << "  ";
@@ -193,13 +200,13 @@ int main( int, char *[] )
       vtkGenericWarningMacro("Incorrect mean");
       testStatus = 1;
       }
-    cout << "\n";
+    std::cout << "\n";
     }
 
-  cout << "\n## Calculated the following derived statistics for first data set:\n";
+  std::cout << "\n## Calculated the following derived statistics for first data set:\n";
   for ( vtkIdType r = 0; r < outputDerived1->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputDerived1->GetNumberOfColumns(); ++ i )
       {
       cout << outputDerived1->GetColumnName( i )
@@ -214,35 +221,39 @@ int main( int, char *[] )
       vtkGenericWarningMacro("Incorrect standard deviation");
       testStatus = 1;
       }
-    cout << "\n";
+    std::cout << "\n";
     }
 
   // Check some results of the Test option
-  cout << "\n## Calculated the following Jarque-Bera statistics:\n";
+  std::cout << "\n## Calculated the following Jarque-Bera statistics:\n";
   for ( vtkIdType r = 0; r < outputTest1->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputTest1->GetNumberOfColumns(); ++ i )
       {
-      cout << outputTest1->GetColumnName( i )
+      std::cout << outputTest1->GetColumnName( i )
            << "="
            << outputTest1->GetValue( r, i ).ToString()
            << "  ";
       }
 
-    cout << "\n";
+    std::cout << "\n";
     }
 
   // Search for outliers to check results of Assess option
   double maxdev = 1.5;
-  cout << "\n## Searching for outliers from mean with relative deviation > "
+  std::cout << "\n## Searching for outliers from mean with relative deviation > "
        << maxdev
        << " for metric 1:\n";
 
-  vtkDoubleArray* vals0 = vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "Metric 0" ) );
-  vtkDoubleArray* vals1 = vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "Metric 1" ) );
-  vtkDoubleArray* devs0 = vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "d(Metric 0)" ) );
-  vtkDoubleArray* devs1 = vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "d(Metric 1)" ) );
+  vtkSmartPointer<vtkDoubleArray> vals0 =
+    vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "Metric 0" ) );
+  vtkSmartPointer<vtkDoubleArray> vals1 =
+    vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "Metric 1" ) );
+  vtkSmartPointer<vtkDoubleArray> devs0 =
+    vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "d(Metric 0)" ) );
+  vtkSmartPointer<vtkDoubleArray> devs1 =
+    vtkDoubleArray::SafeDownCast( outputData1->GetColumnByName( "d(Metric 1)" ) );
 
   if ( ! devs0 || ! devs1 || ! vals0 || ! vals1 )
     {
@@ -261,7 +272,7 @@ int main( int, char *[] )
     if ( dev > maxdev )
       {
       ++ m0outliers;
-      cout << "   "
+      std::cout << "   "
            << " row "
            << r
            << ", "
@@ -281,7 +292,7 @@ int main( int, char *[] )
     if ( dev > maxdev )
       {
       ++ m1outliers;
-      cout << "   "
+      std::cout << "   "
            << " row "
            << r
            << ", "
@@ -296,7 +307,7 @@ int main( int, char *[] )
       }
     }
 
-  cout << "  Found "
+  std::cout << "  Found "
        << m0outliers
        << " outliers for Metric 0"
        << " and "
@@ -310,23 +321,26 @@ int main( int, char *[] )
     }
 
   // Now, used modified output 1 as input 1 to test 0-deviation
-  cout << "\n## Searching for values not equal to 50 for metric 1:\n";
+  std::cout << "\n## Searching for values not equal to 50 for metric 1:\n";
 
-  vtkTable* modifiedPrimary = vtkTable::New();
+  vtkSmartPointer<vtkTable> modifiedPrimary =
+    vtkSmartPointer<vtkTable>::New();
   modifiedPrimary->ShallowCopy( outputPrimary1 );
   modifiedPrimary->SetValueByName( 1, "Mean", 50. );
 
-  vtkTable* modifiedDerived = vtkTable::New();
+  vtkSmartPointer<vtkTable> modifiedDerived =
+    vtkSmartPointer<vtkTable>::New();
   modifiedDerived->ShallowCopy( outputDerived1 );
   modifiedDerived->SetValueByName( 1, "Standard Deviation", 0. );
 
-  vtkMultiBlockDataSet* modifiedModel = vtkMultiBlockDataSet::New();
+  vtkSmartPointer<vtkMultiBlockDataSet> modifiedModel =
+    vtkSmartPointer<vtkMultiBlockDataSet>::New();
   modifiedModel->SetNumberOfBlocks( 2 );
   modifiedModel->SetBlock( 0, modifiedPrimary );
   modifiedModel->SetBlock( 1, modifiedDerived );
 
   // Run with Assess option only (do not recalculate nor rederive a model)
-  ds1->SetInput( vtkStatisticsAlgorithm::INPUT_MODEL, modifiedModel );
+  ds1->SetInputData( vtkStatisticsAlgorithm::INPUT_MODEL, modifiedModel );
   ds1->SetLearnOption( false );
   ds1->SetDeriveOption( false );
   ds1->SetTestOption( true );
@@ -354,7 +368,7 @@ int main( int, char *[] )
       }
     }
 
-  cout << "  Found "
+  std::cout << "  Found "
        << m1outliers
        << " outliers for Metric 1.\n";
 
@@ -374,15 +388,18 @@ int main( int, char *[] )
   // Test with a slight variation of initial data set (to test model aggregation)
   int nVals2 = 32;
 
-  vtkDoubleArray* dataset4Arr = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> dataset4Arr =
+    vtkSmartPointer<vtkDoubleArray>::New();
   dataset4Arr->SetNumberOfComponents( 1 );
   dataset4Arr->SetName( "Metric 0" );
 
-  vtkDoubleArray* dataset5Arr = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> dataset5Arr =
+    vtkSmartPointer<vtkDoubleArray>::New();
   dataset5Arr->SetNumberOfComponents( 1 );
   dataset5Arr->SetName( "Metric 1" );
 
-  vtkDoubleArray* dataset6Arr = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> dataset6Arr =
+    vtkSmartPointer<vtkDoubleArray>::New();
   dataset6Arr->SetNumberOfComponents( 1 );
   dataset6Arr->SetName( "Metric 2" );
 
@@ -394,17 +411,16 @@ int main( int, char *[] )
     dataset6Arr->InsertNextValue( 1. );
     }
 
-  vtkTable* datasetTable2 = vtkTable::New();
+  vtkSmartPointer<vtkTable> datasetTable2 =
+    vtkSmartPointer<vtkTable>::New();
   datasetTable2->AddColumn( dataset4Arr );
-  dataset4Arr->Delete();
   datasetTable2->AddColumn( dataset5Arr );
-  dataset5Arr->Delete();
   datasetTable2->AddColumn( dataset6Arr );
-  dataset6Arr->Delete();
 
   // Set descriptive statistics algorithm and its input data port
-  vtkDescriptiveStatistics* ds2 = vtkDescriptiveStatistics::New();
-  ds2->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, datasetTable2 );
+  vtkSmartPointer<vtkDescriptiveStatistics> ds2 =
+    vtkSmartPointer<vtkDescriptiveStatistics>::New();
+  ds2->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, datasetTable2 );
 
   // Select Columns of Interest (all of them)
   for ( int i = 0; i< nMetrics; ++ i )
@@ -420,33 +436,31 @@ int main( int, char *[] )
   ds2->Update();
 
   // Get output meta tables
-  vtkMultiBlockDataSet* outputMetaDS2 = vtkMultiBlockDataSet::SafeDownCast( ds2->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
-  vtkTable* outputPrimary2 = vtkTable::SafeDownCast( outputMetaDS2->GetBlock( 0 ) );
+  vtkSmartPointer<vtkMultiBlockDataSet> outputMetaDS2 =
+    vtkMultiBlockDataSet::SafeDownCast( ds2->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
+  vtkSmartPointer<vtkTable> outputPrimary2 =
+    vtkTable::SafeDownCast( outputMetaDS2->GetBlock( 0 ) );
 
-  cout << "\n## Calculated the following primary statistics for second data set:\n";
+  std::cout << "\n## Calculated the following primary statistics for second data set:\n";
   for ( vtkIdType r = 0; r < outputPrimary2->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputPrimary2->GetNumberOfColumns(); ++ i )
       {
-      cout << outputPrimary2->GetColumnName( i )
+      std::cout << outputPrimary2->GetColumnName( i )
            << "="
            << outputPrimary2->GetValue( r, i ).ToString()
            << "  ";
       }
-    cout << "\n";
+    std::cout << "\n";
    }
 
-  // Clean up
-  ds2->Delete();
-
   // Test model aggregation by adding new data to engine which already has a model
-  ds1->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, datasetTable2 );
-  datasetTable2->Delete();
-  vtkMultiBlockDataSet* model = vtkMultiBlockDataSet::New();
+  ds1->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, datasetTable2 );
+  vtkSmartPointer<vtkMultiBlockDataSet> model =
+    vtkSmartPointer<vtkMultiBlockDataSet>::New();
   model->ShallowCopy( outputMetaDS1 );
-  ds1->SetInput( vtkStatisticsAlgorithm::INPUT_MODEL, model );
-  model->Delete();
+  ds1->SetInputData( vtkStatisticsAlgorithm::INPUT_MODEL, model );
 
   // Update with Learn and Derive options only
   ds1->SetLearnOption( true );
@@ -467,13 +481,13 @@ int main( int, char *[] )
   outputPrimary1 = vtkTable::SafeDownCast( outputMetaDS1->GetBlock( 0 ) );
   outputDerived1 = vtkTable::SafeDownCast( outputMetaDS1->GetBlock( 1 ) );
 
-  cout << "\n## Calculated the following primary statistics for updated (first + second) data set:\n";
+  std::cout << "\n## Calculated the following primary statistics for updated (first + second) data set:\n";
   for ( vtkIdType r = 0; r < outputPrimary1->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputPrimary1->GetNumberOfColumns(); ++ i )
       {
-      cout << outputPrimary1->GetColumnName( i )
+      std::cout << outputPrimary1->GetColumnName( i )
            << "="
            << outputPrimary1->GetValue( r, i ).ToString()
            << "  ";
@@ -485,16 +499,16 @@ int main( int, char *[] )
       vtkGenericWarningMacro("Incorrect mean");
       testStatus = 1;
       }
-    cout << "\n";
+    std::cout << "\n";
     }
 
-  cout << "\n## Calculated the following derived statistics for updated (first + second) data set:\n";
+  std::cout << "\n## Calculated the following derived statistics for updated (first + second) data set:\n";
   for ( vtkIdType r = 0; r < outputDerived1->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputDerived1->GetNumberOfColumns(); ++ i )
       {
-      cout << outputDerived1->GetColumnName( i )
+      std::cout << outputDerived1->GetColumnName( i )
            << "="
            << outputDerived1->GetValue( r, i ).ToString()
            << "  ";
@@ -508,9 +522,6 @@ int main( int, char *[] )
       }
     cout << "\n";
     }
-
-  // Clean up
-  ds1->Delete();
 
   // ************** Very simple example, for baseline comparison vs. R *********
   double simpleData[] =
@@ -528,7 +539,8 @@ int main( int, char *[] )
     };
   int nSimpleVals = 10;
 
-  vtkDoubleArray* datasetArr = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> datasetArr =
+    vtkSmartPointer<vtkDoubleArray>::New();
   datasetArr->SetNumberOfComponents( 1 );
   datasetArr->SetName( "Digits" );
 
@@ -537,9 +549,9 @@ int main( int, char *[] )
     datasetArr->InsertNextValue( simpleData[i] );
     }
 
-  vtkTable* simpleTable = vtkTable::New();
+  vtkSmartPointer<vtkTable> simpleTable =
+    vtkSmartPointer<vtkTable>::New();
   simpleTable->AddColumn( datasetArr );
-  datasetArr->Delete();
 
   double mean = 4.5;
   double variance = 9.16666666666667;
@@ -547,9 +559,9 @@ int main( int, char *[] )
   double kurtosis = -1.56163636363636;
 
   // Set descriptive statistics algorithm and its input data port
-  vtkDescriptiveStatistics* ds3 = vtkDescriptiveStatistics::New();
-  ds3->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, simpleTable );
-  simpleTable->Delete();
+  vtkSmartPointer<vtkDescriptiveStatistics> ds3 =
+    vtkSmartPointer<vtkDescriptiveStatistics>::New();
+  ds3->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, simpleTable );
 
   // Select column of interest
   ds3->AddColumn( "Digits" );
@@ -558,7 +570,7 @@ int main( int, char *[] )
   ds3->AddColumn( "Bogus" );
 
   // Warning for non existing column will mess up output
-  cout << "\n";
+  std::cout << "\n";
 
   // Test Learn and Derive options only
   ds3->SetLearnOption( true );
@@ -568,15 +580,18 @@ int main( int, char *[] )
   ds3->Update();
 
   // Get output data and meta tables
-  vtkMultiBlockDataSet* outputMetaDS3 = vtkMultiBlockDataSet::SafeDownCast( ds3->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
-  vtkTable* outputPrimary3 = vtkTable::SafeDownCast( outputMetaDS3->GetBlock( 0 ) );
-  vtkTable* outputDerived3 = vtkTable::SafeDownCast( outputMetaDS3->GetBlock( 1 ) );
+  vtkSmartPointer<vtkMultiBlockDataSet> outputMetaDS3 =
+    vtkMultiBlockDataSet::SafeDownCast( ds3->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
+  vtkSmartPointer<vtkTable> outputPrimary3 =
+    vtkTable::SafeDownCast( outputMetaDS3->GetBlock( 0 ) );
+  vtkSmartPointer<vtkTable> outputDerived3 =
+    vtkTable::SafeDownCast( outputMetaDS3->GetBlock( 1 ) );
 
-  cout << "\n## Calculated the following primary statistics for {0,...9} sequence:\n";
-  cout << "   ";
+  std::cout << "\n## Calculated the following primary statistics for {0,...9} sequence:\n";
+  std::cout << "   ";
   for ( int i = 0; i < outputPrimary3->GetNumberOfColumns(); ++ i )
     {
-    cout << outputPrimary3->GetColumnName( i )
+    std::cout << outputPrimary3->GetColumnName( i )
          << "="
          << outputPrimary3->GetValue( 0, i ).ToString()
          << "  ";
@@ -588,13 +603,13 @@ int main( int, char *[] )
     vtkGenericWarningMacro("Incorrect mean");
     testStatus = 1;
     }
-  cout << "\n";
+  std::cout << "\n";
 
-  cout << "\n## Calculated the following derived statistics for {0,...9} sequence:\n";
-  cout << "   ";
+  std::cout << "\n## Calculated the following derived statistics for {0,...9} sequence:\n";
+  std::cout << "   ";
   for ( int i = 0; i < outputDerived3->GetNumberOfColumns(); ++ i )
     {
-    cout << outputDerived3->GetColumnName( i )
+    std::cout << outputDerived3->GetColumnName( i )
          << "="
          << outputDerived3->GetValue( 0, i ).ToString()
          << "  ";
@@ -618,31 +633,33 @@ int main( int, char *[] )
     vtkGenericWarningMacro("Incorrect kurtosis");
     testStatus = 1;
     }
-  cout << "\n";
-
-  // Clean up
-  ds3->Delete();
+  std::cout << "\n";
 
   // ************** Pseudo-random sample to exercise Jarque-Bera test *********
   int nVals = 10000;
 
-  vtkDoubleArray* datasetNormal = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> datasetNormal =
+    vtkSmartPointer<vtkDoubleArray>::New();;
   datasetNormal->SetNumberOfComponents( 1 );
   datasetNormal->SetName( "Standard Normal" );
 
-  vtkDoubleArray* datasetUniform = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> datasetUniform =
+    vtkSmartPointer<vtkDoubleArray>::New();
   datasetUniform->SetNumberOfComponents( 1 );
   datasetUniform->SetName( "Standard Uniform" );
 
-  vtkDoubleArray* datasetLogNormal = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> datasetLogNormal =
+    vtkSmartPointer<vtkDoubleArray>::New();
   datasetLogNormal->SetNumberOfComponents( 1 );
   datasetLogNormal->SetName( "Standard Log-Normal" );
 
-  vtkDoubleArray* datasetExponential = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> datasetExponential =
+    vtkSmartPointer<vtkDoubleArray>::New();
   datasetExponential->SetNumberOfComponents( 1 );
   datasetExponential->SetName( "Standard Exponential" );
 
-  vtkDoubleArray* datasetLaplace = vtkDoubleArray::New();
+  vtkSmartPointer<vtkDoubleArray> datasetLaplace =
+    vtkSmartPointer<vtkDoubleArray>::New();
   datasetLaplace->SetNumberOfComponents( 1 );
   datasetLaplace->SetName( "Standard Laplace" );
 
@@ -659,22 +676,18 @@ int main( int, char *[] )
     datasetLaplace->InsertNextValue( ( u < 0. ? 1. : -1. ) * log ( 1. - 2. * fabs( u ) ) );
     }
 
-  vtkTable* gaussianTable = vtkTable::New();
+  vtkSmartPointer<vtkTable> gaussianTable =
+    vtkSmartPointer<vtkTable>::New();
   gaussianTable->AddColumn( datasetNormal );
-  datasetNormal->Delete();
   gaussianTable->AddColumn( datasetUniform );
-  datasetUniform->Delete();
   gaussianTable->AddColumn( datasetLogNormal );
-  datasetLogNormal->Delete();
   gaussianTable->AddColumn( datasetExponential );
-  datasetExponential->Delete();
   gaussianTable->AddColumn( datasetLaplace );
-  datasetLaplace->Delete();
 
   // Set descriptive statistics algorithm and its input data port
-  vtkDescriptiveStatistics* ds4 = vtkDescriptiveStatistics::New();
-  ds4->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, gaussianTable );
-  gaussianTable->Delete();
+  vtkSmartPointer<vtkDescriptiveStatistics> ds4 =
+    vtkSmartPointer<vtkDescriptiveStatistics>::New();
+  ds4->SetInputData( vtkStatisticsAlgorithm::INPUT_DATA, gaussianTable );
 
   // Select Column of Interest
   ds4->AddColumn( "Standard Normal" );
@@ -691,47 +704,51 @@ int main( int, char *[] )
   ds4->Update();
 
   // Get output data and meta tables
-  vtkMultiBlockDataSet* outputMetaDS4 = vtkMultiBlockDataSet::SafeDownCast( ds4->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
-  vtkTable* outputPrimary4 = vtkTable::SafeDownCast( outputMetaDS4->GetBlock( 0 ) );
-  vtkTable* outputDerived4 = vtkTable::SafeDownCast( outputMetaDS4->GetBlock( 1 ) );
-  vtkTable* outputTest4 = ds4->GetOutput( vtkStatisticsAlgorithm::OUTPUT_TEST );
+  vtkSmartPointer<vtkMultiBlockDataSet> outputMetaDS4 =
+    vtkMultiBlockDataSet::SafeDownCast( ds4->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
+  vtkSmartPointer<vtkTable> outputPrimary4 =
+    vtkTable::SafeDownCast( outputMetaDS4->GetBlock( 0 ) );
+  vtkSmartPointer<vtkTable> outputDerived4 =
+    vtkTable::SafeDownCast( outputMetaDS4->GetBlock( 1 ) );
+  vtkSmartPointer<vtkTable> outputTest4 =
+    ds4->GetOutput( vtkStatisticsAlgorithm::OUTPUT_TEST );
 
-  cout << "\n## Calculated the following primary statistics for pseudo-random variables (n="
+  std::cout << "\n## Calculated the following primary statistics for pseudo-random variables (n="
        << nVals
        << "):\n";
   for ( vtkIdType r = 0; r < outputPrimary4->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputPrimary4->GetNumberOfColumns(); ++ i )
       {
-      cout << outputPrimary4->GetColumnName( i )
+      std::cout << outputPrimary4->GetColumnName( i )
            << "="
            << outputPrimary4->GetValue( r, i ).ToString()
            << "  ";
       }
 
-    cout << "\n";
+    std::cout << "\n";
     }
 
-  cout << "\n## Calculated the following derived statistics for pseudo-random variables (n="
+  std::cout << "\n## Calculated the following derived statistics for pseudo-random variables (n="
        << nVals
        << "):\n";
   for ( vtkIdType r = 0; r < outputDerived4->GetNumberOfRows(); ++ r )
     {
-    cout << "   ";
+    std::cout << "   ";
     for ( int i = 0; i < outputDerived4->GetNumberOfColumns(); ++ i )
       {
-      cout << outputDerived4->GetColumnName( i )
+      std::cout << outputDerived4->GetColumnName( i )
            << "="
            << outputDerived4->GetValue( r, i ).ToString()
            << "  ";
       }
 
-    cout << "\n";
+    std::cout << "\n";
     }
 
   // Check some results of the Test option
-  cout << "\n## Calculated the following Jarque-Bera statistics for pseudo-random variables (n="
+  std::cout << "\n## Calculated the following Jarque-Bera statistics for pseudo-random variables (n="
        << nVals;
 
 #ifdef VTK_USE_GNU_R
@@ -739,7 +756,7 @@ int main( int, char *[] )
   int nRejected = 0;
   double alpha = .01;
 
-  cout << ", null hypothesis: normality, significance level="
+  std::cout << ", null hypothesis: normality, significance level="
        << alpha;
 #endif // VTK_USE_GNU_R
 
@@ -763,13 +780,13 @@ int main( int, char *[] )
     // Must verify that p value is valid (it is set to -1 if R has failed)
     if ( p > -1 && p < alpha )
       {
-      cout << "N.H. rejected";
+      std::cout << "N.H. rejected";
 
       ++ nRejected;
       }
 #endif // VTK_USE_GNU_R
 
-    cout << "\n";
+    std::cout << "\n";
     }
 
 #ifdef VTK_USE_GNU_R
@@ -783,9 +800,6 @@ int main( int, char *[] )
     testStatus = 1;
     }
 #endif // VTK_USE_GNU_R
-
-  // Clean up
-  ds4->Delete();
 
   return testStatus;
 }

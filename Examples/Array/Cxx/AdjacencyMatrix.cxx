@@ -11,9 +11,10 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkViewTheme.h>
 
-int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
+int main(int argc, char *argv[])
 {
-  vtkSmartPointer<vtkDiagonalMatrixSource> source = vtkSmartPointer<vtkDiagonalMatrixSource>::New();
+  vtkSmartPointer<vtkDiagonalMatrixSource> source =
+    vtkSmartPointer<vtkDiagonalMatrixSource>::New();
   source->SetExtents(10);
   source->SetDiagonal(0);
   source->SetSuperDiagonal(1);
@@ -24,10 +25,12 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
   vtkPrintMatrixFormat(cout, vtkDenseArray<double>::SafeDownCast(source->GetOutput()->GetArray(0)));
   cout << "\n";
 
-  vtkSmartPointer<vtkAdjacencyMatrixToEdgeTable> edges = vtkSmartPointer<vtkAdjacencyMatrixToEdgeTable>::New();
+  vtkSmartPointer<vtkAdjacencyMatrixToEdgeTable> edges =
+    vtkSmartPointer<vtkAdjacencyMatrixToEdgeTable>::New();
   edges->SetInputConnection(source->GetOutputPort());
 
-  vtkSmartPointer<vtkTableToGraph> graph = vtkSmartPointer<vtkTableToGraph>::New();
+  vtkSmartPointer<vtkTableToGraph> graph =
+    vtkSmartPointer<vtkTableToGraph>::New();
   graph->SetInputConnection(edges->GetOutputPort());
   graph->AddLinkVertex("rows", "stuff", false);
   graph->AddLinkVertex("columns", "stuff", false);
@@ -42,7 +45,8 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
   theme->SetSelectedCellColor(1,0,1);
   theme->SetSelectedPointColor(1,0,1);
 
-  vtkSmartPointer<vtkGraphLayoutView> view = vtkSmartPointer<vtkGraphLayoutView>::New();
+  vtkSmartPointer<vtkGraphLayoutView> view =
+    vtkSmartPointer<vtkGraphLayoutView>::New();
   view->AddRepresentationFromInputConnection(graph->GetOutputPort());
   view->EdgeLabelVisibilityOn();
   view->SetEdgeLabelArrayName("value");
@@ -55,6 +59,6 @@ int main(int vtkNotUsed(argc), char *vtkNotUsed(argv)[])
   view->ResetCamera();
   view->GetInteractor()->Start();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 

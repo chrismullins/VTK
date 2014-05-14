@@ -35,6 +35,7 @@
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkRenderer.h"
+#include "vtkSmartPointer.h"
 #include "vtkWindowToImageFilter.h"
 #include "vtkImageData.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
@@ -60,9 +61,9 @@ struct ParallelIsoArgs_tmp
 
 struct ParallelIsoRMIArgs_tmp
 {
-  vtkContourFilter* ContourFilter;
-  vtkMultiProcessController* Controller;
-  vtkElevationFilter* Elevation;
+  vtkSmartPointer<vtkContourFilter> ContourFilter;
+  vtkSmartPointer<vtkMultiProcessController> Controller;
+  vtkSmartPointer<vtkElevationFilter> Elevation;
 };
 
 // call back to set the iso surface value.
@@ -73,12 +74,14 @@ void SetIsoValueRMI(void *localArg, void* vtkNotUsed(remoteArg),
 
   float val;
 
-  vtkContourFilter *iso = args->ContourFilter;
+  vtkSmartPointer<vtkContourFilter> iso =
+    args->ContourFilter;
   val = iso->GetValue(0);
   iso->SetValue(0, val + ISO_STEP);
   args->Elevation->Update();
 
-  vtkMultiProcessController* contrl = args->Controller;
+  vtkSmartPointer<vtkMultiProcessController> contrl =
+    args->Controller;
   contrl->Send(args->Elevation->GetOutput(), 0, ISO_OUTPUT_TAG);
 }
 
@@ -86,9 +89,9 @@ void SetIsoValueRMI(void *localArg, void* vtkNotUsed(remoteArg),
 // This will be called by all processes
 void MyMain( vtkMultiProcessController *controller, void *arg )
 {
-  vtkImageReader *reader;
-  vtkContourFilter *iso;
-  vtkElevationFilter *elev;
+  vtkSmartPointer<vtkImageReader> reader;
+  vtkSmartPointer<vtkContourFilter> iso;
+  vtkSmartPointer<vtkElevationFilter> elev;
   int myid, numProcs;
   float val;
   ParallelIsoArgs_tmp* args = reinterpret_cast<ParallelIsoArgs_tmp*>(arg);
@@ -100,24 +103,23 @@ void MyMain( vtkMultiProcessController *controller, void *arg )
 
   // Create the reader, the data file name might have
   // to be changed depending on where the data files are.
-  char* fname = vtkTestUtilities::ExpandDataFileName(args->argc, args->argv,
-                                                     "Data/headsq/quarter");
-  reader = vtkImageReader::New();
+  // Use "VTKData/Data/headsq/quarter"
+  char * fname = args->argv[1];
+  reader = vtkSmartPointer<vtkImageReader>::New();
   reader->SetDataByteOrderToLittleEndian();
   reader->SetDataExtent(0, 63, 0, 63, 1, 93);
   reader->SetFilePrefix(fname);
   reader->SetDataSpacing(3.2, 3.2, 1.5);
-  delete[] fname;
 
   // Iso-surface.
-  iso = vtkContourFilter::New();
+  iso = vtkSmartPointer<vtkContourFilter>::New();
   iso->SetInputConnection(reader->GetOutputPort());
   iso->SetValue(0, ISO_START);
   iso->ComputeScalarsOff();
   iso->ComputeGradientsOff();
 
   // Compute a different color for each process.
-  elev = vtkElevationFilter::New();
+  elev = vtkSmartPointer<vtkElevationFilter>::New();
   elev->SetInputConnection(iso->GetOutputPort());
   val = (myid+1) / static_cast<float>(numProcs);
   elev->SetScalarRange(val, val+0.001);
@@ -145,13 +147,20 @@ void MyMain( vtkMultiProcessController *controller, void *arg )
   else
     {
     // Create the rendering part of the pipeline
-    vtkAppendPolyData *app = vtkAppendPolyData::New();
-    vtkRenderer *ren = vtkRenderer::New();
-    vtkRenderWindow *renWindow = vtkRenderWindow::New();
-    vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
-    vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
-    vtkActor *actor = vtkActor::New();
-    vtkCamera *cam = vtkCamera::New();
+    vtkSmartPointer<vtkAppendPolyData> app =
+      vtkSmartPointer<vtkAppendPolyData>::New();
+    vtkSmartPointer<vtkRenderer> ren =
+      vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderWindow> renWindow =
+      vtkSmartPointer<vtkRenderWindow>::New();
+    vtkSmartPointer<vtkRenderWindowInteractor> iren =
+      vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    vtkSmartPointer<vtkPolyDataMapper> mapper =
+      vtkSmartPointer<vtkPolyDataMapper>::New();
+    vtkSmartPointer<vtkActor> actor =
+      vtkSmartPointer<vtkActor>::New();
+    vtkSmartPointer<vtkCamera> cam =
+      vtkSmartPointer<vtkCamera>::New();
     renWindow->AddRenderer(ren);
     iren->SetRenderWindow(renWindow);
     ren->SetBackground(0.9, 0.9, 0.9);
@@ -180,13 +189,13 @@ void MyMain( vtkMultiProcessController *controller, void *arg )
         }
       for (int i = 1; i < numProcs; ++i)
         {
-        vtkPolyData* pd = vtkPolyData::New();
+        vtkSmartPointer<vtkPolyData> pd =
+          vtkSmartPointer<vtkPolyData>::New();
         controller->Receive(pd, i, ISO_OUTPUT_TAG);
         if (j == ISO_NUM - 1)
           {
           app->AddInputData(pd);
           }
-        pd->Delete();
         }
       }
 
@@ -196,35 +205,18 @@ void MyMain( vtkMultiProcessController *controller, void *arg )
       controller->TriggerRMI(i, vtkMultiProcessController::BREAK_RMI_TAG);
       }
 
-    vtkPolyData* outputCopy = vtkPolyData::New();
+    vtkSmartPointer<vtkPolyData> outputCopy =
+      vtkSmartPointer<vtkPolyData>::New();
     outputCopy->ShallowCopy(elev->GetOutput());
     app->AddInputData(outputCopy);
-    outputCopy->Delete();
     app->Update();
     renWindow->Render();
 
     *(args->retVal) =
       vtkRegressionTester::Test(args->argc, args->argv, renWindow, 10);
 
-    if ( *(args->retVal) == vtkRegressionTester::DO_INTERACTOR)
-      {
-      iren->Start();
-      }
-
-    // Clean up
-    app->Delete();
-    ren->Delete();
-    renWindow->Delete();
-    iren->Delete();
-    mapper->Delete();
-    actor->Delete();
-    cam->Delete();
+    iren->Start();
     }
-
-  // clean up objects in all processes.
-  reader->Delete();
-  iso->Delete();
-  elev->Delete();
 }
 
 
@@ -239,7 +231,8 @@ int main( int argc, char* argv[] )
 
   // Note that this will create a vtkMPIController if MPI
   // is configured, vtkThreadedController otherwise.
-  vtkMPIController* controller = vtkMPIController::New();
+  vtkSmartPointer<vtkMPIController> controller =
+    vtkSmartPointer<vtkMPIController>::New();
 
   controller->Initialize(&argc, &argv, 1);
 
@@ -256,12 +249,6 @@ int main( int argc, char* argv[] )
   controller->SingleMethodExecute();
 
   controller->Finalize();
-  controller->Delete();
 
   return !retVal;
 }
-
-
-
-
-

@@ -1,4 +1,5 @@
 #include <vtkArrayPrint.h>
+#include <vtkSmartPointer.h>
 #include <vtkSparseArray.h>
 
 #include <vtksys/ios/sstream>
@@ -7,8 +8,8 @@ int main(int argc, char* argv[])
 {
   if(argc != 2)
     {
-    cerr << "usage: " << argv[0] << " matrix-size\n";
-    return 1;
+    cerr << "Usage: " << argv[0] << " matrix-size\n";
+    return EXIT_FAILURE;
     }
 
   int size = 0;
@@ -17,12 +18,13 @@ int main(int argc, char* argv[])
 
   if(size < 1)
     {
-    cerr << "matrix size must be an integer greater-than zero\n";
-    return 2;
+    cerr << "Matrix size must be an integer greater than zero.\n";
+    return EXIT_FAILURE;
     }
 
   // Create a sparse identity matrix:
-  vtkSparseArray<double>* matrix = vtkSparseArray<double>::New();
+  vtkSmartPointer< vtkSparseArray<double> > matrix =
+    vtkSmartPointer< vtkSparseArray<double> >::New();
   matrix->Resize(0, 0); // To set the number of dimensions
   for(int n = 0; n != size; ++n)
     {
@@ -30,12 +32,10 @@ int main(int argc, char* argv[])
     }
   matrix->SetExtentsFromContents(); // To synchronize the array extents with newly-added values.
 
-  cout << "matrix:\n";
-  vtkPrintMatrixFormat(cout, matrix);
-  cout << "\n";
+  std::cout << "matrix:\n";
+  vtkPrintMatrixFormat(std::cout, vtkTypedArray<double>::SafeDownCast(matrix));
+  std::cout << "\n";
 
-  matrix->Delete();
-
-  return 0;
+  return EXIT_SUCCESS;
 }
 
